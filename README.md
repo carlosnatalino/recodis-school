@@ -4,14 +4,25 @@ The code available in this reporitory was presented at the training school of CA
 
 The course was designed by Marija Furdek and Amaro de Sousa. The code was developed by Carlos Natalino and Igor M. de Araújo.
 
+Germany50             |  Coronet
+:-------------------------:|:-------------------------:
+![Germany50](./results/Germany50_node_betweenness_color.svg)  |  ![Coronet Conus](./results/Coronet_node_betweenness_color.svg)
+
+The code in this repository works with Python 3.6.
+The code can use either [LPSOLVE](http://lpsolve.sourceforge.net/5.5/) or IBM CPLEX.
+The LP files generated using CPLEX can be also used with Gurobi.
+
 ## Content in this repository
 
-- Files containing the examples used in the RECODIS school.
+- File exploring several metrics of the topologies [here](./explore-topologies.ipynb).
+- File containing the ACA examples used in the RECODIS school [here](./aca.ipynb).
+- File containing the CLSD examples using predefined replica placement [here](./clsd.ipynb).
+- File containing the RPP and CLSD examples [here](./rpp-clsd.ipynb).
 - Topology description of two topologies:
 
 Germany50             |  Coronet
 :-------------------------:|:-------------------------:
-![](./results/Germany50_original.svg)  |  ![](./results/Coronet_original.svg)
+![Germany50](./results/Germany50_original.svg)  |  ![Coronet Conus](./results/Coronet_original.svg)
 
 - A Dockerfile for the creation of a container using LPSOLVE and Python to run the examples.
 
