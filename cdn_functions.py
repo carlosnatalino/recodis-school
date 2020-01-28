@@ -1,16 +1,19 @@
 import datetime
 mode = None
 try:
+    from lpsolve55 import *
+    mode = 'lpsolve'
+    print('lpsolve supported')
+except:
+    print('lpsolve not supported')
+try:
     import cplex
     from cplex.exceptions import CplexSolverError
     mode = 'cplex'
+    print('cplex supported')
 except:
     print('CPLEX not supported')
-try:
-    from lpsolve55 import *
-    mode = 'lpsolve'
-except:
-    print('lpsolve not supported')
+
 import numpy as np
 import networkx as nx
 import sys
@@ -62,14 +65,14 @@ class ModelFile():
     def binary(self, variables):
         if self.mode == 'cplex':
             self.write('Binary')
-            self.write(variables.strip())
+            self.write(variables.strip().replace(' ', '\n'))
         elif self.mode == 'lpsolve':
             self.write(f'bin {variables.strip()}')
             
     def int(self, variables):
         if self.mode == 'cplex':
             self.write('General')
-            self.write(variables.strip())
+            self.write(variables.strip().replace(' ', '\n'))
         elif self.mode == 'lpsolve':
             self.write(f'int {variables.strip()}')
         
