@@ -7,6 +7,12 @@ try:
 except:
     print('lpsolve not supported')
 try:
+    import gurobipy as grb
+    mode = 'gurobi'
+    print('gurobi supported')
+except:
+    print('gurobi not supported')
+try:
     import cplex
     from cplex.exceptions import CplexSolverError
     mode = 'cplex'
@@ -24,7 +30,7 @@ class ModelFile():
         self.filename = filename
         self.file = open(filename, 'w') # open with 'w' flag to write over existing file
         self.mode = mode
-        if self.mode == 'cplex':
+        if self.mode in ['cplex', 'gurobi']:
             self.comment_start = '\\'
             self.comment_end = '\n'
             self.line_end = '\n'
@@ -36,14 +42,14 @@ class ModelFile():
             raise ValueError('mode configured incorrectly')
             
     def minimize(self, write):
-        if self.mode == 'cplex':
+        if self.mode in ['cplex', 'gurobi']:
             self.write(f'minimize {write}')
             self.write('subject to')
         elif self.mode == 'lpsolve':
             self.write(f'min: {write}')
             
     def maximize(self, write):
-        if self.mode == 'cplex':
+        if self.mode in ['cplex', 'gurobi']:
             self.write(f'maximize {write}')
             self.write('subject to')
         elif self.mode == 'lpsolve':
@@ -59,25 +65,25 @@ class ModelFile():
         self.file.write(self.line_end)
         
     def bounds(self):
-        if self.mode == 'cplex':
+        if self.mode in ['cplex', 'gurobi']:
             self.write('Bounds')
         
     def binary(self, variables):
-        if self.mode == 'cplex':
+        if self.mode in ['cplex', 'gurobi']:
             self.write('Binary')
             self.write(variables.strip().replace(' ', '\n'))
         elif self.mode == 'lpsolve':
             self.write(f'bin {variables.strip()}')
             
     def int(self, variables):
-        if self.mode == 'cplex':
+        if self.mode in ['cplex', 'gurobi']:
             self.write('General')
             self.write(variables.strip().replace(' ', '\n'))
         elif self.mode == 'lpsolve':
             self.write(f'int {variables.strip()}')
         
     def close(self):
-        if self.mode == 'cplex':
+        if self.mode in ['cplex', 'gurobi']:
             self.write('End')
         self.file.close()
         
@@ -117,7 +123,29 @@ class ModelFile():
         #             variables_rpp[name] = value
                     variables[name] = np.absolute(np.rint(value))
             return variables
-        else:
+        elif self.mode == 'gurobi':
+            gurobi_env = grb.Env()
+            gurobi_env.setParam('Threads', 1)
+            gurobi_env.setParam('OutputFlag', 0)
+            model = grb.read(self.filename, gurobi_env)
+            model.optimize()
+
+            if model.status == grb.GRB.Status.INFEASIBLE:
+                print('Optimization was stopped with status %d' % model.status, 'infeasible')
+                return None
+            elif model.status == grb.GRB.Status.OPTIMAL:
+                print('model solved successfully')
+                variables = {}
+                solution_vars = model.getVars()
+#                 print('solution vars', len(solution_vars))
+                for var in solution_vars:
+#                     print(var.varName, var.x)
+                    variables[var.varName] = var.x
+                return variables
+            else:
+                print('model was not optimized')
+                return None
+        elif self.mode == 'lpsolve':
             lp = lpsolve('read_lp_file', self.filename)
             status = lpsolve('solve', lp)
             if status == 3:
