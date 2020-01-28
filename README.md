@@ -8,9 +8,11 @@ The course was designed by Marija Furdek and Amaro de Sousa. The code was develo
 
 - Files containing the examples used in the RECODIS school.
 - Topology description of two topologies:
+
 Germany50             |  Coronet
 :-------------------------:|:-------------------------:
 ![](./results/Germany50_original.svg)  |  ![](./results/Coronet_original.svg)
+
 - A Dockerfile for the creation of a container using LPSOLVE and Python to run the examples.
 
 ## If you want to use a docker container
