@@ -6,7 +6,7 @@ The course was designed by Marija Furdek and Amaro de Sousa. The code was develo
 
 Germany50             |  Coronet
 :-------------------------:|:-------------------------:
-![Germany50](./results/Germany50_node_betweenness_color.svg)  |  ![Coronet Conus](./results/Coronet_node_betweenness_color.svg)
+![Germany50](./figures/Germany50_node_betweenness_color.svg)  |  ![Coronet Conus](./figures/Coronet_node_betweenness_color.svg)
 
 The code in this repository works with Python 3.6.
 The code can use either [LPSOLVE](http://lpsolve.sourceforge.net/5.5/) or IBM CPLEX.
@@ -22,9 +22,15 @@ The LP files generated using CPLEX can be also used with Gurobi.
 
 Germany50             |  Coronet
 :-------------------------:|:-------------------------:
-![Germany50](./results/Germany50_original.svg)  |  ![Coronet Conus](./results/Coronet_original.svg)
+![Germany50](./figures/Germany50_original.svg)  |  ![Coronet Conus](./figures/Coronet_original.svg)
 
 - A Dockerfile for the creation of a container using LPSOLVE and Python to run the examples.
+
+# Running this code
+
+## Using a deployed version of this repository
+
+We have deployed the code in this repository into a free Heroku server. To access it, go to http://recodis-school.herokuapp.com/ and use the token `8$3oqzKxtq9jybE5iWGMFu7Q$feXLs6Nlr4s8fMFOiqMQAQ` to access the running files.
 
 ## If you want to use a docker container
 
@@ -39,10 +45,10 @@ docker build --rm -t school .
 
 2. Run the docker container:
 ```
-docker run --name school school
+docker run --rm -it --name school school
 ```
 
-## If you have Python, Jupyter and LPSOLVE (or IBM CPLEX) in your computer
+## If you have Python, Jupyter Lab and LPSOLVE (or IBM CPLEX or GUROBI) in your computer
 
 1. Download the code:
 ```
@@ -55,7 +61,7 @@ cd recodis-school
 jupyter lab
 ```
 
-### Citing the work
+# Research works used as basis for the code in this repository
 
 The code contained in this repository was used in the following publications:
 
@@ -88,5 +94,3 @@ The code contained in this repository was used in the following publications:
 - **Replica Placement Problem and Critical Link Set Detection**: Carlos Natalino, Amaro de Sousa, Marija Furdek, Lena Wosinska, "Content Placement in 5G-enabled Edge/Core Datacenter Networks Resilient to Link Cut Attacks", Networks. DOI: [10.1002/net.21930](https://doi.org/10.1002/net.21930)
 
 For inquiries, contact carlos.natalino@chalmers.se
-
-
