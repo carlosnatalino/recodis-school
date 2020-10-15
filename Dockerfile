@@ -9,4 +9,4 @@ USER $NB_UID
 WORKDIR /home/$NB_USER/recodis-school/
 
 # CMD ["./scripts/entrypoint.sh"]
-CMD ["jupyter", "lab", "--no-browser", "--port", "$PORT", "--ip=*"]
+CMD ["jupyter", "lab", "--config=./conf/jupyter.py"]
