@@ -5,7 +5,7 @@ c = get_config()
 c.IPKernelApp.pylab = 'inline'  # if you want plotting support always in your notebook
 # Notebook config
 c.NotebookApp.notebook_dir = ''
-# c.NotebookApp.allow_origin = u'cfe-jupyter.herokuapp.com' # put your public IP Address here
+c.NotebookApp.allow_origin = u'recodis-school.herokuapp.com' # put your public IP Address here
 c.NotebookApp.ip = '*'
 c.NotebookApp.allow_remote_access = True
 c.NotebookApp.open_browser = False
