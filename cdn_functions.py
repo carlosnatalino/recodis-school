@@ -1,187 +1,14 @@
+import os
+import sys
 import datetime
-mode = None
-try:
-    from lpsolve55 import *
-    mode = 'lpsolve'
-    print('lpsolve supported')
-except:
-    print('lpsolve not supported')
-try:
-    import gurobipy as grb
-    mode = 'gurobi'
-    print('gurobi supported')
-except:
-    print('gurobi not supported')
-try:
-    import cplex
-    from cplex.exceptions import CplexSolverError
-    mode = 'cplex'
-    print('cplex supported')
-except:
-    print('CPLEX not supported')
-
 import numpy as np
 import networkx as nx
-import sys
-import os
 
-class ModelFile():
-    def __init__(self, filename, mode='cplex'):
-        self.filename = filename
-        self.file = open(filename, 'w') # open with 'w' flag to write over existing file
-        self.mode = mode
-        if self.mode in ['cplex', 'gurobi']:
-            self.comment_start = '\\'
-            self.comment_end = '\n'
-            self.line_end = '\n'
-        elif self.mode == 'lpsolve':
-            self.comment_start = '/*'
-            self.comment_end = '*/\n'
-            self.line_end = ';\n'
-        else:
-            raise ValueError('mode configured incorrectly')
-            
-    def minimize(self, write):
-        if self.mode in ['cplex', 'gurobi']:
-            self.write(f'minimize {write}')
-            self.write('subject to')
-        elif self.mode == 'lpsolve':
-            self.write(f'min: {write}')
-            
-    def maximize(self, write):
-        if self.mode in ['cplex', 'gurobi']:
-            self.write(f'maximize {write}')
-            self.write('subject to')
-        elif self.mode == 'lpsolve':
-            self.write(f'max: {write}')
-            
-    def comment(self, comment):
-        self.file.write(f'{self.comment_start} {comment} {self.comment_end}')
-        
-    def write(self, write, end=True):
-        self.file.write(f'{write}{self.line_end if end is True else ""}')
-        
-    def new_line(self):
-        self.file.write(self.line_end)
-        
-    def bounds(self):
-        if self.mode in ['cplex', 'gurobi']:
-            self.write('Bounds')
-        
-    def binary(self, variables):
-        if self.mode in ['cplex', 'gurobi']:
-            self.write('Binary')
-            self.write(variables.strip().replace(' ', '\n'))
-        elif self.mode == 'lpsolve':
-            self.write(f'bin {variables.strip()}')
-            
-    def int(self, variables):
-        if self.mode in ['cplex', 'gurobi']:
-            self.write('General')
-            self.write(variables.strip().replace(' ', '\n'))
-        elif self.mode == 'lpsolve':
-            self.write(f'int {variables.strip()}')
-        
-    def close(self):
-        if self.mode in ['cplex', 'gurobi']:
-            self.write('End')
-        self.file.close()
-        
-    def solve(self):
-        if self.mode == 'cplex':
-            c = cplex.Cplex()
-            c.parameters.threads.set(1)
-            c.set_results_stream(os.devnull)
-            c.set_log_stream(os.devnull)
-        #     c.set_results_stream(sys.stdout)
-        #     c.set_log_stream(sys.stdout)
-
-            c.read(self.filename)
-
-            try:
-                c.solve()
-            except CplexSolverError:
-                print("Exception raised during solve")
-                return None
-
-            status = c.solution.get_status()
-            if status == c.solution.status.unbounded:
-                print("Model is unbounded")
-                return None
-
-            if status == c.solution.status.infeasible:
-                print("Model is infeasible")
-                return None
-
-            if status == c.solution.status.infeasible_or_unbounded:
-                print("Model is infeasible or unbounded")
-                return None
-
-            variables = {}
-            if status == c.solution.status.optimal or status == c.solution.status.MIP_optimal:
-                for name, value in zip(c.variables.get_names(), c.solution.get_values()):
-        #             variables_rpp[name] = value
-                    variables[name] = np.absolute(np.rint(value))
-            return variables
-        elif self.mode == 'gurobi':
-            gurobi_env = grb.Env()
-            gurobi_env.setParam('Threads', 1)
-            gurobi_env.setParam('OutputFlag', 0)
-            model = grb.read(self.filename, gurobi_env)
-            model.optimize()
-
-            if model.status == grb.GRB.Status.INFEASIBLE:
-                print('Optimization was stopped with status %d' % model.status, 'infeasible')
-                return None
-            elif model.status == grb.GRB.Status.OPTIMAL:
-                print('model solved successfully')
-                variables = {}
-                solution_vars = model.getVars()
-#                 print('solution vars', len(solution_vars))
-                for var in solution_vars:
-#                     print(var.varName, var.x)
-                    variables[var.varName] = var.x
-                return variables
-            else:
-                print('model was not optimized')
-                return None
-        elif self.mode == 'lpsolve':
-            lp = lpsolve('read_lp_file', self.filename)
-            status = lpsolve('solve', lp)
-            if status == 3:
-                print("Model is unbounded")
-                return
-            if status == 2:
-                print("Model is infeasible")
-                return
-            if status == 4:
-                print("The model is degenerative")
-                return
-            if status == -2:
-                print("Out of memory")
-                return
-            if status == 1:
-                print("The model is sub-optimal")
-                return
-            if status == 4:
-                print("The model is degenerative")
-                return
-            if status == 5:
-                print("Numerical failure encountered")
-                return
-            if status == 25:
-                print("Accuracy error encountered")
-                return
-            
-            variables = {}
-            for name, value in zip(lpsolve('get_col_names', lp), lpsolve('get_solution', lp)[1]):
-                variables[name] = value
-            lpsolve('delete_lp', lp)
-            return variables
+from cross_solver import ModelFile, mode
         
 
 def rpp_min_d(graph, budget):
-    file = ModelFile('./models/rpp-{}_{}.lp'.format(graph.graph['name'], budget), mode=mode) # open with 'w' flag to write over existing file
+    file = ModelFile('./models/rpp-{}_{}'.format(graph.graph['name'], budget), 'rpp-{}_{}'.format(graph.graph['name'], budget), mode=mode) # open with 'w' flag to write over existing file
 
     file.comment(f'writing an RPP model ')
     file.comment(f'Now: {datetime.datetime.now().astimezone()} ')
@@ -239,7 +66,7 @@ def rpp_min_d(graph, budget):
         for (i, j) in graph.edges():
             binary_variables += ' z_{s}_{i}_{j}'.format(s=q, i=i, j=j)
             binary_variables += ' z_{s}_{j}_{i}'.format(s=q, i=i, j=j)
-    file.binary(binary_variables)
+    file.binary_variables(binary_variables)
     file.close()
     
     variables_rpp = file.solve()
@@ -250,7 +77,7 @@ def rpp_min_d(graph, budget):
 
 def clsd(graph, variables_rpp, p):
     topology = graph.graph['name']
-    file = ModelFile(f'./models/clsd-{topology}_{p}.lp', mode=mode) # open with 'w' flag to write over existing file
+    file = ModelFile(f'./models/clsd-{topology}_{p}', f'clsd-{topology}_{p}', mode=mode) # open with 'w' flag to write over existing file
 
     file.comment(f'writing a CLSD model for p={p}')
     file.comment('Now: {}'.format(datetime.datetime.now().astimezone()))
@@ -308,7 +135,7 @@ def clsd(graph, variables_rpp, p):
                 file.write(f'u_{i}_{j} - v_{j} <= 0')
     
     file.bounds()
-    file.int('sum_connected')
+    file.int_variables('sum_connected')
     binary_variables = ''
     for i,j in graph.edges():
         binary_variables += f' x_{i}_{j}'
@@ -319,7 +146,7 @@ def clsd(graph, variables_rpp, p):
         for j in graph.nodes:
             if int(i) < int(j):
                 binary_variables += f' u_{i}_{j}'
-    file.binary(binary_variables)
+    file.binary_variables(binary_variables)
     file.close()
     
     variables_clsd = file.solve()

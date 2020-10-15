@@ -28,8 +28,9 @@ import sys
 import os
 
 class ModelFile():
-    def __init__(self, filename, mode='cplex', stdout=sys.stdout, threads=1):
+    def __init__(self, filename, name, mode='cplex', stdout=sys.stdout, threads=1):
         assert stdout in [os.devnull, sys.stdout, 'log']
+        self.name = name
         self.filename = filename
         self.file = open(filename + '.lp', 'w') # open with 'w' flag to write over existing file
         self.mode = mode
@@ -247,6 +248,7 @@ class ModelFile():
                 return None
         elif self.mode == 'lpsolve':
             lp = lpsolve('read_lp_file', self.filename + '.lp')
+            lpsolve('set_lp_name', lp, self.name)
             status = lpsolve('solve', lp)
             self.end_solving = datetime.datetime.now(datetime.timezone.utc)
             if status == 3:
