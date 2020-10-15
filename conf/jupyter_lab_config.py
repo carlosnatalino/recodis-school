@@ -10,7 +10,8 @@ c.NotebookApp.ip = '*'
 c.NotebookApp.allow_remote_access = True
 c.NotebookApp.open_browser = False
 # ipython -c "from notebook.auth import passwd; passwd()"
-c.NotebookApp.password = u'argon2:$argon2id$v=19$m=10240,t=10,p=8$3oqzKxtq9jybE5iWGMFu7Q$feXLs6Nlr4s8fMFOiqMQAQ'
+# c.NotebookApp.password = u'argon2:$argon2id$v=19$m=10240,t=10,p=8$3oqzKxtq9jybE5iWGMFu7Q$feXLs6Nlr4s8fMFOiqMQAQ'
+c.NotebookApp.token = '8$3oqzKxtq9jybE5iWGMFu7Q$feXLs6Nlr4s8fMFOiqMQAQ'
 c.NotebookApp.port = int(os.environ.get("PORT", 8888))
 c.NotebookApp.open_browser = False
 c.NotebookApp.allow_root = True
