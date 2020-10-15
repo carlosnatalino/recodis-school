@@ -7,3 +7,6 @@ RUN conda install --yes networkx
 USER $NB_UID
 
 WORKDIR /home/$NB_USER/recodis-school/
+
+# CMD ["./scripts/entrypoint.sh"]
+CMD ["jupyter", "notebook", "--config=./conf/jupyter.py"]
