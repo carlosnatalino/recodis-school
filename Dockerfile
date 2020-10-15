@@ -8,7 +8,7 @@ USER $NB_UID
 
 WORKDIR /home/$NB_USER/recodis-school/
 
-CP ./conf/jupyter_lab_config.py .
+COPY ./conf/jupyter_lab_config.py .
 
 # CMD ["./scripts/entrypoint.sh"]
 CMD ["jupyter", "lab", "--config", "jupyter_lab_config.py"]
